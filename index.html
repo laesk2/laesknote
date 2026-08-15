@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Laesk Note</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="app-header">
+        <button class="header-btn" id="back-btn" aria-label="뒤로가기">
+            <i class="fas fa-chevron-left"></i> <span>폴더</span>
+        </button>
+        <button class="header-btn" id="options-btn" aria-label="옵션">
+            <i class="fas fa-ellipsis-circle"></i>
+        </button>
+        <button class="header-btn hidden" id="done-btn">완료</button>
+    </header>
+
+    <main class="note-list-container" id="note-list-view">
+        <div class="list-header">
+            <h1>메모</h1>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="검색" aria-label="메모 검색">
+            </div>
+        </div>
+        
+        <ul class="note-list" id="note-list">
+            <!-- JS에서 메모 목록이 렌더링됩니다 -->
+        </ul>
+    </main>
+
+    <main class="note-editor-container hidden" id="note-editor-view">
+        <textarea id="note-textarea" placeholder="내용을 입력하세요..." aria-label="메모 내용 작성"></textarea>
+        
+        <div class="editor-toolbar">
+            <button aria-label="표 삽입"><i class="fas fa-table"></i></button>
+            <button aria-label="글꼴 설정"><i class="fas fa-font"></i></button>
+            <button aria-label="할일 목록"><i class="fas fa-list-ul"></i></button>
+            <button aria-label="카메라"><i class="fas fa-camera"></i></button>
+            <button aria-label="그리기"><i class="fas fa-pen"></i></button>
+        </div>
+    </main>
+
+    <footer class="app-footer" id="list-footer">
+        <span class="note-count" id="note-count">0개의 메모</span>
+        <button class="compose-btn" id="new-note-btn" aria-label="새 메모 작성">
+            <i class="fas fa-edit"></i>
+        </button>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
