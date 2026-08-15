@@ -6,16 +6,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Laesk Note</title>
-    
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <header class="app-header">
-        <button class="header-btn hidden" id="back-btn" aria-label="뒤로가기">
+        <button class="header-btn hidden" id="back-btn">
             <i class="fas fa-chevron-left"></i> <span id="back-btn-text">폴더</span>
         </button>
-        <button class="header-btn" id="options-btn" aria-label="옵션">
+        <button class="header-btn" id="options-btn">
             <i class="fas fa-ellipsis-circle"></i>
         </button>
         <button class="header-btn hidden" id="done-btn">완료</button>
@@ -26,21 +25,8 @@
         <div class="list-header">
             <h1>폴더</h1>
         </div>
-        <ul class="note-list">
-            <li class="note-item" id="folder-notes">
-                <div class="folder-item-content">
-                    <i class="fas fa-folder" style="color: var(--ios-yellow);"></i>
-                    <span class="note-title">메모</span>
-                    <span class="folder-count" id="count-notes">0</span>
-                </div>
-            </li>
-            <li class="note-item" id="folder-trash">
-                <div class="folder-item-content">
-                    <i class="fas fa-trash" style="color: var(--ios-gray);"></i>
-                    <span class="note-title">최근 삭제된 항목</span>
-                    <span class="folder-count" id="count-trash">0</span>
-                </div>
-            </li>
+        <ul class="note-list" id="folder-list">
+            <!-- JS에서 동적으로 폴더 목록이 렌더링됩니다 -->
         </ul>
     </main>
 
@@ -48,10 +34,10 @@
     <main class="note-list-container hidden" id="note-list-view">
         <div class="list-header">
             <h1 id="list-title">메모</h1>
-            <div class="search-bar">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="검색" aria-label="메모 검색">
-            </div>
+        </div>
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="검색">
         </div>
         <ul class="note-list" id="note-list">
             <!-- JS에서 메모 목록이 렌더링됩니다 -->
@@ -60,15 +46,15 @@
 
     <!-- 메모 에디터 뷰 -->
     <main class="note-editor-container hidden" id="note-editor-view">
-        <textarea id="note-textarea" placeholder="내용을 입력하세요..." aria-label="메모 내용 작성"></textarea>
+        <textarea id="note-textarea" placeholder="내용을 입력하세요..."></textarea>
         
         <!-- 일반 메모 툴바 -->
         <div class="editor-toolbar" id="normal-toolbar">
-            <button aria-label="표 삽입"><i class="fas fa-table"></i></button>
-            <button aria-label="글꼴 설정"><i class="fas fa-font"></i></button>
-            <button aria-label="할일 목록"><i class="fas fa-list-ul"></i></button>
-            <button aria-label="그리기"><i class="fas fa-pen"></i></button>
-            <button aria-label="메모 삭제" id="delete-note-btn" style="color: #ff3b30;"><i class="fas fa-trash"></i></button>
+            <button><i class="fas fa-table"></i></button>
+            <button><i class="fas fa-font"></i></button>
+            <button><i class="fas fa-list-ul"></i></button>
+            <button><i class="fas fa-pen"></i></button>
+            <button id="delete-note-btn" style="color: #ff3b30;"><i class="fas fa-trash"></i></button>
         </div>
         
         <!-- 휴지통 툴바 -->
@@ -78,9 +64,12 @@
         </div>
     </main>
 
-    <footer class="app-footer hidden" id="list-footer">
+    <footer class="app-footer" id="main-footer">
+        <button class="compose-btn" id="new-folder-btn">
+            <i class="fas fa-folder-plus"></i>
+        </button>
         <span class="note-count" id="note-count">0개의 메모</span>
-        <button class="compose-btn" id="new-note-btn" aria-label="새 메모 작성">
+        <button class="compose-btn" id="new-note-btn">
             <i class="fas fa-edit"></i>
         </button>
     </footer>

@@ -1,5 +1,4 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -8,103 +7,144 @@ const firebaseConfig = {
   projectId: "laesk-note",
   storageBucket: "laesk-note.firebasestorage.app",
   messagingSenderId: "783638243302",
-  appId: "1:783638243302:web:065256c5261df095c21827",
-  measurementId: "G-1PYT9SDZ0Q"
+  appId: "1:783638243302:web:065256c5261df095c21827"
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
-// DOM Elements
-const foldersView = document.getElementById('folders-view');
-const listView = document.getElementById('note-list-view');
-const editorView = document.getElementById('note-editor-view');
-const listFooter = document.getElementById('list-footer');
+// DOM 요소 매핑
+const views = {
+    folders: document.getElementById('folders-view'),
+    list: document.getElementById('note-list-view'),
+    editor: document.getElementById('note-editor-view')
+};
 
-const backBtn = document.getElementById('back-btn');
-const backBtnText = document.getElementById('back-btn-text');
-const optionsBtn = document.getElementById('options-btn');
-const doneBtn = document.getElementById('done-btn');
-const newNoteBtn = document.getElementById('new-note-btn');
+const btns = {
+    back: document.getElementById('back-btn'),
+    backText: document.getElementById('back-btn-text'),
+    options: document.getElementById('options-btn'),
+    done: document.getElementById('done-btn'),
+    newFolder: document.getElementById('new-folder-btn'),
+    newNote: document.getElementById('new-note-btn'),
+    delNote: document.getElementById('delete-note-btn'),
+    restoreNote: document.getElementById('restore-note-btn'),
+    permDelNote: document.getElementById('perm-delete-note-btn')
+};
 
-const noteList = document.getElementById('note-list');
-const noteTextarea = document.getElementById('note-textarea');
-const noteCount = document.getElementById('note-count');
-const listTitle = document.getElementById('list-title');
+const ui = {
+    folderList: document.getElementById('folder-list'),
+    noteList: document.getElementById('note-list'),
+    textarea: document.getElementById('note-textarea'),
+    noteCount: document.getElementById('note-count'),
+    listTitle: document.getElementById('list-title'),
+    footer: document.getElementById('main-footer'),
+    normalToolbar: document.getElementById('normal-toolbar'),
+    trashToolbar: document.getElementById('trash-toolbar')
+};
 
-const folderNotesBtn = document.getElementById('folder-notes');
-const folderTrashBtn = document.getElementById('folder-trash');
-const countNotes = document.getElementById('count-notes');
-const countTrash = document.getElementById('count-trash');
-
-const normalToolbar = document.getElementById('normal-toolbar');
-const trashToolbar = document.getElementById('trash-toolbar');
-const deleteNoteBtn = document.getElementById('delete-note-btn');
-const restoreNoteBtn = document.getElementById('restore-note-btn');
-const permDeleteNoteBtn = document.getElementById('perm-delete-note-btn');
-
-// State
-let currentView = 'folders'; // 'folders', 'list', 'editor'
-let currentFolder = 'notes'; // 'notes', 'trash'
+// 상태 관리
+let currentView = 'folders'; 
+let currentFolderId = 'default'; 
+let currentFolderName = '메모';
 let currentNoteId = null;
-let allNotesData = [];
 
-function updateUI() {
-    foldersView.classList.add('hidden');
-    listView.classList.add('hidden');
-    editorView.classList.add('hidden');
-    listFooter.classList.add('hidden');
-    backBtn.classList.add('hidden');
-    optionsBtn.classList.add('hidden');
-    doneBtn.classList.add('hidden');
+let allNotes = [];
+let allFolders = [];
 
-    if (currentView === 'folders') {
-        foldersView.classList.remove('hidden');
-        optionsBtn.classList.remove('hidden');
-    } 
-    else if (currentView === 'list') {
-        listView.classList.remove('hidden');
-        listFooter.classList.remove('hidden');
-        backBtn.classList.remove('hidden');
-        backBtnText.textContent = '폴더';
-        optionsBtn.classList.remove('hidden');
-        
-        listTitle.textContent = currentFolder === 'notes' ? '메모' : '최근 삭제된 항목';
-        newNoteBtn.style.visibility = currentFolder === 'notes' ? 'visible' : 'hidden';
-        
+// UI 업데이트 로직
+function switchView(viewName) {
+    currentView = viewName;
+    Object.values(views).forEach(v => v.classList.add('hidden'));
+    views[viewName].classList.remove('hidden');
+
+    btns.back.classList.toggle('hidden', viewName === 'folders');
+    btns.options.classList.toggle('hidden', viewName === 'editor');
+    btns.done.classList.toggle('hidden', viewName !== 'editor');
+    ui.footer.classList.toggle('hidden', viewName === 'editor');
+
+    if (viewName === 'folders') {
+        btns.newFolder.style.visibility = 'visible';
+        btns.newNote.style.visibility = 'hidden';
+        ui.noteCount.textContent = '';
+        renderFolders();
+    } else if (viewName === 'list') {
+        btns.newFolder.style.visibility = 'hidden';
+        btns.newNote.style.visibility = currentFolderId === 'trash' ? 'hidden' : 'visible';
+        btns.backText.textContent = '폴더';
+        ui.listTitle.textContent = currentFolderName;
         renderNotes();
-    } 
-    else if (currentView === 'editor') {
-        editorView.classList.remove('hidden');
-        backBtn.classList.remove('hidden');
-        backBtnText.textContent = currentFolder === 'notes' ? '메모' : '휴지통';
-        doneBtn.classList.remove('hidden');
-        
-        if (currentFolder === 'notes') {
-            normalToolbar.classList.remove('hidden');
-            trashToolbar.classList.add('hidden');
-            noteTextarea.readOnly = false;
-        } else {
-            normalToolbar.classList.add('hidden');
-            trashToolbar.classList.remove('hidden');
-            noteTextarea.readOnly = true;
-        }
+    } else if (viewName === 'editor') {
+        btns.backText.textContent = currentFolderName;
+        const isTrash = (currentFolderId === 'trash');
+        ui.normalToolbar.classList.toggle('hidden', isTrash);
+        ui.trashToolbar.classList.toggle('hidden', !isTrash);
+        ui.textarea.readOnly = isTrash;
     }
 }
 
-function renderNotes() {
-    noteList.innerHTML = '';
-    let count = 0;
+// 폴더 및 메모 렌더링
+function renderFolders() {
+    ui.folderList.innerHTML = '';
     
-    const filteredNotes = allNotesData.filter(note => {
-        if (currentFolder === 'notes') return !note.isDeleted;
-        if (currentFolder === 'trash') return note.isDeleted;
-        return false;
+    // 1. 기본 폴더 (메모)
+    const defaultNotesCount = allNotes.filter(n => !n.isDeleted && n.folderId === 'default').length;
+    appendFolderToUI('default', '메모', 'fa-folder', 'var(--ios-yellow)', defaultNotesCount, false);
+
+    // 2. 사용자가 추가한 커스텀 폴더
+    allFolders.forEach(folder => {
+        const count = allNotes.filter(n => !n.isDeleted && n.folderId === folder.id).length;
+        appendFolderToUI(folder.id, folder.name, 'fa-folder', 'var(--ios-yellow)', count, true);
+    });
+
+    // 3. 휴지통
+    const trashCount = allNotes.filter(n => n.isDeleted).length;
+    appendFolderToUI('trash', '최근 삭제된 항목', 'fa-trash', 'var(--ios-gray)', trashCount, false);
+}
+
+function appendFolderToUI(id, name, iconClass, iconColor, count, isDeletable) {
+    const li = document.createElement('li');
+    li.className = 'note-item';
+    li.innerHTML = `
+        <div class="folder-item-content">
+            <i class="fas ${iconClass}" style="color: ${iconColor};"></i>
+            <span class="note-title">${name}</span>
+            <span class="folder-count">${count}</span>
+        </div>
+        ${isDeletable ? `<button class="folder-delete-btn"><i class="fas fa-minus-circle"></i></button>` : ''}
+    `;
+
+    li.querySelector('.folder-item-content').onclick = () => {
+        currentFolderId = id;
+        currentFolderName = name;
+        switchView('list');
+    };
+
+    if (isDeletable) {
+        li.querySelector('.folder-delete-btn').onclick = async (e) => {
+            e.stopPropagation();
+            if (confirm(`'${name}' 폴더를 삭제하시겠습니까? (내부 메모는 모두 휴지통으로 이동합니다)`)) {
+                // 폴더 내 메모 삭제(휴지통 이동) 처리
+                const notesInFolder = allNotes.filter(n => n.folderId === id && !n.isDeleted);
+                for (const note of notesInFolder) {
+                    await updateDoc(doc(db, "notes", note.id), { isDeleted: true });
+                }
+                await deleteDoc(doc(db, "folders", id));
+            }
+        };
+    }
+    ui.folderList.appendChild(li);
+}
+
+function renderNotes() {
+    ui.noteList.innerHTML = '';
+    
+    const filteredNotes = allNotes.filter(note => {
+        if (currentFolderId === 'trash') return note.isDeleted;
+        return !note.isDeleted && note.folderId === currentFolderId;
     });
 
     filteredNotes.forEach((data) => {
-        count++;
         const text = data.text || '';
         const lines = text.split('\n');
         const title = lines[0] || '새 메모';
@@ -115,156 +155,128 @@ function renderNotes() {
 
         const li = document.createElement('li');
         li.className = 'note-item';
+        
         li.innerHTML = `
-            <div class="note-title">${title}</div>
-            <div class="note-preview">
-                <span>${dateString}</span>
-                <span>${preview}</span>
+            <div class="note-content-wrapper" style="cursor:pointer;">
+                <div class="note-title">${title}</div>
+                <div class="note-preview">
+                    <span>${dateString}</span>
+                    <span>${preview}</span>
+                </div>
             </div>
+            <button class="list-delete-btn"><i class="fas fa-trash"></i></button>
         `;
-        li.onclick = () => {
+
+        li.querySelector('.note-content-wrapper').onclick = () => {
             currentNoteId = data.id;
-            noteTextarea.value = text;
-            currentView = 'editor';
-            updateUI();
+            ui.textarea.value = text;
+            switchView('editor');
         };
-        noteList.appendChild(li);
-    });
-    
-    noteCount.textContent = `${count}개의 메모`;
-}
 
-function loadNotes() {
-    const q = query(collection(db, "notes"), orderBy("updatedAt", "desc"));
-    onSnapshot(q, (snapshot) => {
-        allNotesData = [];
-        let activeCount = 0;
-        let trashCount = 0;
-
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            data.id = docSnap.id;
-            allNotesData.push(data);
-            
-            if (data.isDeleted) {
-                trashCount++;
-            } else {
-                activeCount++;
+        // 리스트에서 바로 메모 삭제
+        li.querySelector('.list-delete-btn').onclick = async (e) => {
+            e.stopPropagation();
+            if (confirm("메모를 삭제하시겠습니까?")) {
+                if (currentFolderId === 'trash') {
+                    await deleteDoc(doc(db, "notes", data.id));
+                } else {
+                    await updateDoc(doc(db, "notes", data.id), { isDeleted: true, updatedAt: new Date() });
+                }
             }
-        });
-
-        countNotes.textContent = activeCount;
-        countTrash.textContent = trashCount;
-
-        if (currentView === 'list') {
-            renderNotes();
-        }
+        };
+        ui.noteList.appendChild(li);
     });
+    
+    ui.noteCount.textContent = `${filteredNotes.length}개의 메모`;
 }
 
+// 데이터 동기화 (실시간)
+onSnapshot(query(collection(db, "folders"), orderBy("createdAt", "asc")), (snapshot) => {
+    allFolders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (currentView === 'folders') renderFolders();
+});
+
+onSnapshot(query(collection(db, "notes"), orderBy("updatedAt", "desc")), (snapshot) => {
+    allNotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (currentView === 'folders') renderFolders();
+    if (currentView === 'list') renderNotes();
+});
+
+// 메모 저장/삭제 관련 로직
 async function saveCurrentNote() {
-    if (currentFolder === 'trash') return;
+    if (currentFolderId === 'trash') return;
     
-    const text = noteTextarea.value.trim();
-    if (!text && !currentNoteId) {
-        return;
-    }
+    const text = ui.textarea.value.trim();
+    if (!text && !currentNoteId) return;
 
     if (currentNoteId) {
-        const noteRef = doc(db, "notes", currentNoteId);
-        await updateDoc(noteRef, {
-            text: text,
-            updatedAt: new Date()
-        });
+        await updateDoc(doc(db, "notes", currentNoteId), { text, updatedAt: new Date() });
     } else if (text) {
         await addDoc(collection(db, "notes"), {
-            text: text,
-            updatedAt: new Date(),
-            isDeleted: false
-        });
-    }
-}
-
-async function moveToTrash() {
-    if (currentNoteId) {
-        const noteRef = doc(db, "notes", currentNoteId);
-        await updateDoc(noteRef, {
-            isDeleted: true,
-            updatedAt: new Date()
-        });
-    }
-    currentNoteId = null;
-    currentView = 'list';
-    updateUI();
-}
-
-async function restoreNote() {
-    if (currentNoteId) {
-        const noteRef = doc(db, "notes", currentNoteId);
-        await updateDoc(noteRef, {
+            text,
+            folderId: currentFolderId,
             isDeleted: false,
             updatedAt: new Date()
         });
     }
     currentNoteId = null;
-    currentView = 'list';
-    updateUI();
 }
 
-async function permanentlyDelete() {
-    if (currentNoteId) {
-        const noteRef = doc(db, "notes", currentNoteId);
-        await deleteDoc(noteRef);
+// 이벤트 리스너 등록
+btns.newFolder.addEventListener('click', async () => {
+    const name = prompt("새로운 폴더 이름을 입력하세요:");
+    if (name && name.trim()) {
+        await addDoc(collection(db, "folders"), { name: name.trim(), createdAt: new Date() });
     }
+});
+
+btns.newNote.addEventListener('click', () => {
+    if (currentFolderId === 'trash') return;
     currentNoteId = null;
-    currentView = 'list';
-    updateUI();
-}
-
-// Event Listeners
-folderNotesBtn.addEventListener('click', () => {
-    currentFolder = 'notes';
-    currentView = 'list';
-    updateUI();
+    ui.textarea.value = '';
+    switchView('editor');
 });
 
-folderTrashBtn.addEventListener('click', () => {
-    currentFolder = 'trash';
-    currentView = 'list';
-    updateUI();
-});
-
-newNoteBtn.addEventListener('click', () => {
-    if (currentFolder === 'trash') return;
-    currentNoteId = null;
-    noteTextarea.value = '';
-    currentView = 'editor';
-    updateUI();
-});
-
-backBtn.addEventListener('click', () => {
+btns.back.addEventListener('click', () => {
     if (currentView === 'editor') {
         saveCurrentNote();
-        currentView = 'list';
-        updateUI();
+        switchView('list');
     } else if (currentView === 'list') {
-        currentView = 'folders';
-        updateUI();
+        switchView('folders');
     }
 });
 
-doneBtn.addEventListener('click', () => {
+btns.done.addEventListener('click', () => {
     if (currentView === 'editor') {
         saveCurrentNote();
-        currentView = 'list';
-        updateUI();
+        switchView('list');
     }
 });
 
-deleteNoteBtn.addEventListener('click', moveToTrash);
-restoreNoteBtn.addEventListener('click', restoreNote);
-permDeleteNoteBtn.addEventListener('click', permanentlyDelete);
+// 에디터 툴바 버튼 - 삭제 관련
+btns.delNote.addEventListener('click', async () => {
+    if (currentNoteId && confirm("메모를 삭제하시겠습니까?")) {
+        await updateDoc(doc(db, "notes", currentNoteId), { isDeleted: true, updatedAt: new Date() });
+        currentNoteId = null;
+        switchView('list');
+    }
+});
 
-// Init
-updateUI();
-loadNotes();
+btns.restoreNote.addEventListener('click', async () => {
+    if (currentNoteId) {
+        await updateDoc(doc(db, "notes", currentNoteId), { isDeleted: false, updatedAt: new Date() });
+        currentNoteId = null;
+        switchView('list');
+    }
+});
+
+btns.permDelNote.addEventListener('click', async () => {
+    if (currentNoteId && confirm("메모를 영구적으로 삭제하시겠습니까?")) {
+        await deleteDoc(doc(db, "notes", currentNoteId));
+        currentNoteId = null;
+        switchView('list');
+    }
+});
+
+// 초기 실행
+switchView('folders');

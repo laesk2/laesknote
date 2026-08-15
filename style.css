@@ -4,7 +4,6 @@
     --ios-white: #ffffff;
     --ios-text: #000000;
     --ios-gray: #8e8e93;
-    --ios-light-gray: #e5e5ea;
     --ios-separator: #c6c6c8;
 }
 
@@ -12,7 +11,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     -webkit-tap-highlight-color: transparent; 
 }
 
@@ -38,7 +37,6 @@ body {
     padding: 10px 16px;
     height: 50px;
     background-color: var(--ios-bg);
-    z-index: 10;
 }
 
 .header-btn {
@@ -52,8 +50,6 @@ body {
     gap: 5px;
     min-width: 60px;
 }
-
-.header-btn span { font-size: 17px; }
 
 main {
     flex: 1;
@@ -79,8 +75,6 @@ main::-webkit-scrollbar { display: none; }
     gap: 8px;
     margin-bottom: 20px;
 }
-
-.search-bar i { color: var(--ios-gray); }
 .search-bar input {
     border: none;
     background: none;
@@ -89,30 +83,12 @@ main::-webkit-scrollbar { display: none; }
     font-size: 17px;
 }
 
-/* Folders View */
-.folder-item-content {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.folder-item-content i {
-    font-size: 20px;
-    width: 24px;
-    text-align: center;
-}
-
-.folder-count {
-    margin-left: auto;
-    color: var(--ios-gray);
-    font-size: 15px;
-}
-
 .note-list {
     list-style: none;
     background-color: var(--ios-white);
     border-radius: 10px;
     overflow: hidden;
+    margin-bottom: 20px;
 }
 
 .note-item {
@@ -125,11 +101,35 @@ main::-webkit-scrollbar { display: none; }
 }
 .note-item:last-child { border-bottom: none; }
 
+.folder-item-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+.folder-item-content i {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+}
+.folder-count {
+    margin-left: auto;
+    color: var(--ios-gray);
+    font-size: 15px;
+}
+.folder-delete-btn {
+    background: none;
+    border: none;
+    color: #ff3b30;
+    font-size: 18px;
+    padding-left: 15px;
+    cursor: pointer;
+}
+
 .note-content-wrapper {
     flex: 1;
     overflow: hidden;
 }
-
 .note-title {
     font-size: 17px;
     font-weight: 600;
@@ -138,7 +138,6 @@ main::-webkit-scrollbar { display: none; }
     text-overflow: ellipsis;
     margin-bottom: 4px;
 }
-
 .note-preview {
     display: flex;
     gap: 10px;
@@ -148,7 +147,6 @@ main::-webkit-scrollbar { display: none; }
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
 .list-delete-btn {
     background: none;
     border: none;
@@ -164,7 +162,6 @@ main::-webkit-scrollbar { display: none; }
     padding: 0;
     background-color: var(--ios-white);
 }
-
 #note-textarea {
     flex: 1;
     width: 100%;
@@ -185,7 +182,6 @@ main::-webkit-scrollbar { display: none; }
     background-color: #f8f8f8;
     border-top: 1px solid var(--ios-separator);
 }
-
 .editor-toolbar button {
     background: none;
     border: none;
@@ -203,26 +199,16 @@ main::-webkit-scrollbar { display: none; }
     border-top: 1px solid var(--ios-separator);
     height: 60px;
 }
-
 .note-count {
     font-size: 12px;
     color: var(--ios-text);
     flex: 1;
     text-align: center;
 }
-
 .compose-btn {
     background: none;
     border: none;
     color: var(--ios-yellow);
     font-size: 24px;
     cursor: pointer;
-}
-
-/* 새로고침 회전 애니메이션 */
-@keyframes spin {
-    100% { transform: rotate(360deg); }
-}
-.spin-anim {
-    animation: spin 1s linear infinite;
 }
