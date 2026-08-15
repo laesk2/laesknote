@@ -119,8 +119,16 @@ main::-webkit-scrollbar { display: none; }
     padding: 12px 16px;
     border-bottom: 1px solid var(--ios-separator);
     cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 .note-item:last-child { border-bottom: none; }
+
+.note-content-wrapper {
+    flex: 1;
+    overflow: hidden;
+}
 
 .note-title {
     font-size: 17px;
@@ -139,6 +147,15 @@ main::-webkit-scrollbar { display: none; }
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.list-delete-btn {
+    background: none;
+    border: none;
+    color: #ff3b30;
+    font-size: 18px;
+    padding: 10px;
+    cursor: pointer;
 }
 
 .note-editor-container {
@@ -200,4 +217,12 @@ main::-webkit-scrollbar { display: none; }
     color: var(--ios-yellow);
     font-size: 24px;
     cursor: pointer;
+}
+
+/* 새로고침 회전 애니메이션 */
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+.spin-anim {
+    animation: spin 1s linear infinite;
 }
