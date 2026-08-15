@@ -12,8 +12,8 @@
 </head>
 <body>
     <header class="app-header">
-        <button class="header-btn" id="back-btn" aria-label="뒤로가기">
-            <i class="fas fa-chevron-left"></i> <span>폴더</span>
+        <button class="header-btn hidden" id="back-btn" aria-label="뒤로가기">
+            <i class="fas fa-chevron-left"></i> <span id="back-btn-text">폴더</span>
         </button>
         <button class="header-btn" id="options-btn" aria-label="옵션">
             <i class="fas fa-ellipsis-circle"></i>
@@ -21,33 +21,64 @@
         <button class="header-btn hidden" id="done-btn">완료</button>
     </header>
 
-    <main class="note-list-container" id="note-list-view">
+    <!-- 폴더 뷰 -->
+    <main class="folders-container" id="folders-view">
         <div class="list-header">
-            <h1>메모</h1>
+            <h1>폴더</h1>
+        </div>
+        <ul class="note-list">
+            <li class="note-item" id="folder-notes">
+                <div class="folder-item-content">
+                    <i class="fas fa-folder" style="color: var(--ios-yellow);"></i>
+                    <span class="note-title">메모</span>
+                    <span class="folder-count" id="count-notes">0</span>
+                </div>
+            </li>
+            <li class="note-item" id="folder-trash">
+                <div class="folder-item-content">
+                    <i class="fas fa-trash" style="color: var(--ios-gray);"></i>
+                    <span class="note-title">최근 삭제된 항목</span>
+                    <span class="folder-count" id="count-trash">0</span>
+                </div>
+            </li>
+        </ul>
+    </main>
+
+    <!-- 메모 목록 뷰 -->
+    <main class="note-list-container hidden" id="note-list-view">
+        <div class="list-header">
+            <h1 id="list-title">메모</h1>
             <div class="search-bar">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="검색" aria-label="메모 검색">
             </div>
         </div>
-        
         <ul class="note-list" id="note-list">
             <!-- JS에서 메모 목록이 렌더링됩니다 -->
         </ul>
     </main>
 
+    <!-- 메모 에디터 뷰 -->
     <main class="note-editor-container hidden" id="note-editor-view">
         <textarea id="note-textarea" placeholder="내용을 입력하세요..." aria-label="메모 내용 작성"></textarea>
         
-        <div class="editor-toolbar">
+        <!-- 일반 메모 툴바 -->
+        <div class="editor-toolbar" id="normal-toolbar">
             <button aria-label="표 삽입"><i class="fas fa-table"></i></button>
             <button aria-label="글꼴 설정"><i class="fas fa-font"></i></button>
             <button aria-label="할일 목록"><i class="fas fa-list-ul"></i></button>
-            <button aria-label="카메라"><i class="fas fa-camera"></i></button>
             <button aria-label="그리기"><i class="fas fa-pen"></i></button>
+            <button aria-label="메모 삭제" id="delete-note-btn" style="color: #ff3b30;"><i class="fas fa-trash"></i></button>
+        </div>
+        
+        <!-- 휴지통 툴바 -->
+        <div class="editor-toolbar hidden" id="trash-toolbar">
+            <button id="restore-note-btn" style="color: var(--ios-yellow); font-size: 16px; font-weight: 600;">복구</button>
+            <button id="perm-delete-note-btn" style="color: #ff3b30; font-size: 16px; font-weight: 600;">영구 삭제</button>
         </div>
     </main>
 
-    <footer class="app-footer" id="list-footer">
+    <footer class="app-footer hidden" id="list-footer">
         <span class="note-count" id="note-count">0개의 메모</span>
         <button class="compose-btn" id="new-note-btn" aria-label="새 메모 작성">
             <i class="fas fa-edit"></i>

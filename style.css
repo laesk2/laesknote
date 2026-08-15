@@ -50,6 +50,7 @@ body {
     display: flex;
     align-items: center;
     gap: 5px;
+    min-width: 60px;
 }
 
 .header-btn span { font-size: 17px; }
@@ -86,6 +87,25 @@ main::-webkit-scrollbar { display: none; }
     outline: none;
     width: 100%;
     font-size: 17px;
+}
+
+/* Folders View */
+.folder-item-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.folder-item-content i {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+}
+
+.folder-count {
+    margin-left: auto;
+    color: var(--ios-gray);
+    font-size: 15px;
 }
 
 .note-list {
@@ -143,6 +163,7 @@ main::-webkit-scrollbar { display: none; }
 .editor-toolbar {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 12px 20px;
     background-color: #f8f8f8;
     border-top: 1px solid var(--ios-separator);
